@@ -19,6 +19,10 @@ if(NOT TARGET ${ct_rbd})
 endif()
 find_package(Boost REQUIRED system filesystem)
 
+list(APPEND CMAKE_PREFIX_PATH "/opt")
+find_package(blasfeo QUIET)
+find_package(hpipm QUIET)
+
 # extract interface compile definitions from previous ct packages as options
 importInterfaceCompileDefinitionsAsOptions(ct_core)
 importInterfaceCompileDefinitionsAsOptions(ct_optcon)

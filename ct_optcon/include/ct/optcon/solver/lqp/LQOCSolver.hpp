@@ -39,6 +39,7 @@ public:
 	 * update the shared_ptr to the LQOCProblem instance and call initialize instance deriving from this class.
 	 * @param lqocProblem
 	 */
+     
     void setProblem(std::shared_ptr<LQOCProblem_t> lqocProblem)
     {
         setProblemImpl(lqocProblem);
@@ -58,6 +59,12 @@ public:
     virtual bool configureStateBoxConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
     {
         throw std::runtime_error("state box constraints are not available for this solver.");
+    }
+
+    // return true if configuration changed, otherwise false
+    virtual bool configureSoftConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+    {
+        throw std::runtime_error("soft box constraints are not available for this solver.");
     }
 
     //! setup and configure the general (in)equality constraints
@@ -80,10 +87,17 @@ public:
 
     //! extract the solution (can be overriden if additional extraction steps required in specific solver)
     virtual void computeStatesAndControls() = 0;
+    virtual void computeSlAndSu() = 0;
+
     //! return solution for state
     const ct::core::StateVectorArray<STATE_DIM, SCALAR>& getSolutionState() { return x_sol_; }
     //! return solution for control
     const ct::core::ControlVectorArray<CONTROL_DIM, SCALAR>& getSolutionControl() { return u_sol_; }
+
+    const ct::core::SoftVectorArray<STATE_DIM, CONTROL_DIM, SCALAR>& getSolutionSl() { return sl_sol_; }
+
+    const ct::core::SoftVectorArray<STATE_DIM, CONTROL_DIM, SCALAR>& getSolutionSu() { return su_sol_; }
+
 
     //! return TVLQR feedback matrices
     virtual void computeFeedbackMatrices() = 0;
@@ -108,6 +122,8 @@ protected:
 
     core::StateVectorArray<STATE_DIM, SCALAR> x_sol_;            // solution in x
     core::ControlVectorArray<CONTROL_DIM, SCALAR> u_sol_;        // solution in u
+    core::SoftVectorArray<STATE_DIM, CONTROL_DIM, SCALAR> sl_sol_;            // solution in x
+    core::SoftVectorArray<STATE_DIM, CONTROL_DIM, SCALAR> su_sol_;        // solution in u
     ct::core::FeedbackArray<STATE_DIM, CONTROL_DIM, SCALAR> L_;  // solution feedback
     ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> lv_;       // feedforward increment (iLQR-style)
 };

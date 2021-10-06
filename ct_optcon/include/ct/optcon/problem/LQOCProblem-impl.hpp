@@ -66,6 +66,10 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumStages(int N)
     q_.resize(N + 1);
     qv_.resize(N + 1);
     Q_.resize(N + 1);
+    Zl_.resize(N + 1);
+    Zu_.resize(N + 1);
+    zl_.resize(N + 1);
+    zu_.resize(N + 1);
 
     rv_.resize(N);
     R_.resize(N);
@@ -75,7 +79,12 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumStages(int N)
     x_I_.resize(N + 1);
     u_lb_.resize(N);
     u_ub_.resize(N);
+    u_lb_.resize(N);
+    u_ub_.resize(N);
+    s_lb_.resize(N + 1);
+    s_ub_.resize(N + 1);
     u_I_.resize(N);
+    s_I_.resize(N + 1);
 
     nbx_.resize(N + 1);
     nbu_.resize(N);
@@ -212,6 +221,15 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateStateBoxConstra
         setIntermediateStateBoxConstraint(i, nConstr, x_lb, x_ub, sp, x_nom_abs[i]);
 }
 
+template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
+void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setIntermediateStateBoxConstraintsI(const int i, const int nConstr,
+    const constr_vec_t& x_lb,
+    const constr_vec_t& x_ub,
+    const VectorXi& sp,
+    const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_nom_abs)
+{
+    setIntermediateStateBoxConstraint(i, nConstr, x_lb, x_ub, sp, x_nom_abs[i]);
+}
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setTerminalBoxConstraints(const int nConstr,
@@ -245,6 +263,37 @@ void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setTerminalBoxConstraints(cons
 }
 
 template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
+void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setInitialBoxConstraints(const int nConstr,
+    const constr_vec_t& x_lb,
+    const constr_vec_t& x_ub,
+    const VectorXi& sp,
+    const ct::core::StateVector<STATE_DIM, SCALAR>& x_nom_abs)
+{
+    if (nConstr > 0)
+    {
+        if ((x_lb.rows() != x_ub.rows()) || (x_lb.size() != nConstr) || (sp.rows() != nConstr) ||
+            (sp(sp.rows() - 1) > (STATE_DIM - 1)))
+        {
+            std::cout << "n.o. constraints : " << nConstr << std::endl;
+            std::cout << "ux_lb : " << x_lb.transpose() << std::endl;
+            std::cout << "ux_ub : " << x_ub.transpose() << std::endl;
+            std::cout << "sparsity : " << sp.transpose() << std::endl;
+            throw(std::runtime_error("LQOCProblem setTerminalBoxConstraint: error in constraint config"));
+        }
+
+        nbx_[1] = nConstr;
+
+        // loop through box constraints and assign bounds in differential format
+        for (int i = 0; i < nConstr; i++)
+        {
+            x_I_[1](i) = sp(i);
+            x_lb_[1](i) = x_lb(i) - x_nom_abs(sp(i));  // substract the corresponding entry in nom-state
+            x_ub_[1](i) = x_ub(i) - x_nom_abs(sp(i));  // substract the corresponding entry in nom-state
+        }
+    }
+}
+
+template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setGeneralConstraints(const constr_vec_t& d_lb,
     const constr_vec_t& d_ub,
     const constr_state_jac_t& C,
@@ -271,13 +320,12 @@ template <int STATE_DIM, int CONTROL_DIM, typename SCALAR>
 void LQOCProblem<STATE_DIM, CONTROL_DIM, SCALAR>::setFromTimeInvariantLinearQuadraticProblem(
     ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
     ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
+    core::StateVector<STATE_DIM, SCALAR> x0,
     const ct::core::StateVector<STATE_DIM, SCALAR>& offset,
     const double dt)
 {
-    setZero();
+    setZero(1);
 
-    core::StateVector<STATE_DIM, SCALAR> x0;
-    x0.setZero();  // by definition
     core::ControlVector<CONTROL_DIM, SCALAR> u0;
     u0.setZero();  // by definition
 

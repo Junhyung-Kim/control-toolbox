@@ -90,10 +90,16 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
         std::cout << "HPIPM allocating memory for QP with time horizon: " << N_ << std::endl;
         for (int i = 0; i < N_ + 1; i++)
         {
-            std::cout << "HPIPM stage " << i << ": (nx, nu, nbu, nbx, ng) : (" << nx_[i] << ", " << nu_[i] << ", "
-                      << nbu_[i] << ", " << nbx_[i] << ", " << ng_[i] << ")" << std::endl;
+          //  std::cout << "HPIPM stage " << i << ": (nx, nu, nbu, nbx, ng, ns) : (" << nx_[i] << ", " << nu_[i] << ", "
+           //           << nbu_[i] << ", " << nbx_[i] << ", " << ng_[i] << ",  "<< nsg_[i] << ")" << std::endl;
         }
     }
+
+    for (int i = 0; i < N_ + 1; i++)
+        {
+       //     std::cout << "HPIPM stage " << i << ": (nx, nu, nbu, nbx, ng, ns) : (" << nx_[i] << ", " << nu_[i] << ", "
+         //             << nbu_[i] << ", " << nbx_[i] << ", " << ng_[i] << ",  "<< nsg_[i] << ")" << std::endl;
+        }
 
     // allocate ocp dimensions
     dim_size_ = d_ocp_qp_dim_memsize(N_);
@@ -110,7 +116,6 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
         hidxbx_.data(), hlbx_.data(), hubx_.data(), hidxbu_.data(), hlbu_.data(), hubu_.data(),  // box constraints
         hC_.data(), hD_.data(), hlg_.data(), hug_.data(),                                        // gen constraints
         hZl_.data(), hZu_.data(), hzl_.data(), hzu_.data(), hidxs_.data(), hlls_.data(), hlus_.data(), &qp_);
-
     // set constraint maskings for unbounded dimensions
     for (int ii = 0; ii <= N_; ii++)
     {
@@ -122,18 +127,17 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::initializeAndAllocate()
         ::d_ocp_qp_set_lbx_mask(ii, hlbx_mask_[ii], &qp_);
         ::d_ocp_qp_set_ubx_mask(ii, hubx_mask_[ii], &qp_);
     }
+ 
     for (int ii = 0; ii < N_; ii++)
     {
         // masks for input box constraints
         ::d_ocp_qp_set_lbu_mask(ii, hlbu_mask_[ii], &qp_);
         ::d_ocp_qp_set_ubu_mask(ii, hubu_mask_[ii], &qp_);
     }
-
     // allocation for solution
     int qp_sol_size = ::d_ocp_qp_sol_memsize(&dim_);
     qp_sol_mem_ = malloc(qp_sol_size);
     ::d_ocp_qp_sol_create(&dim_, &qp_sol_, qp_sol_mem_);
-
     // ipm arg
     int ipm_arg_size = ::d_ocp_qp_ipm_arg_memsize(&dim_);
     ipm_arg_mem_ = malloc(ipm_arg_size);
@@ -185,11 +189,11 @@ template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
 {
 // optional printout
-#ifdef HPIPM_PRINT_MATRICES
+ //   #ifdef HPIPM_PRINT_MATRICES
     for (int i = 0; i < N_ + 1; i++)
     {
-        std::cout << "HPIPM matrix printout for stage " << i << std::endl;
-        if (i < N_)
+       // std::cout << "HPIPM matrix printout for stage " << i << std::endl;
+/*        if (i < N_)
         {
             printf("\nA\n");
             d_print_mat(STATE_DIM, STATE_DIM, hA_[i], STATE_DIM);
@@ -213,8 +217,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
             d_print_mat(CONTROL_DIM, STATE_DIM, hS_[i], CONTROL_DIM);
             printf("\nr\n");
             d_print_mat(1, CONTROL_DIM, hr_[i], 1);
-        }
-
+        }*/
+/*
         printf("\nnbu\n");
         std::cout << nbu_[i] << std::endl;
         printf("\nhlbu_\n");
@@ -226,6 +230,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         printf("\nhubu_mask_\n");
         d_print_mat(1, nbu_[i], hubu_mask_[i], 1);
 
+/*      
         printf("\nnbx\n");
         std::cout << nbx_[i] << std::endl;
         printf("\nhlbx_\n");
@@ -236,7 +241,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         d_print_mat(1, nbx_[i], hlbx_mask_[i], 1);
         printf("\nhubx_mask_\n");
         d_print_mat(1, nbx_[i], hubx_mask_[i], 1);
-
+*/
+/*
         printf("\nng\n");
         std::cout << ng_[i] << std::endl;
         printf("\nC\n");
@@ -251,9 +257,17 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         d_print_mat(1, ng_[i], hlg_mask_[i], 1);
         printf("\nhug_mask_\n");
         d_print_mat(1, ng_[i], hug_mask_[i], 1);
-
+*/
+     /*   printf("\nHZl_ \n");
+        d_print_mat(CONTROL_DIM+STATE_DIM +1, CONTROL_DIM+STATE_DIM +1, hZl_[i], CONTROL_DIM+STATE_DIM +1);
+        printf("\nHZux_\n");
+        d_print_mat(CONTROL_DIM+STATE_DIM +1, CONTROL_DIM+STATE_DIM +1, hZu_[i], CONTROL_DIM+STATE_DIM +1);
+        printf("\nhzl_\n");
+        d_print_mat(1,  CONTROL_DIM+STATE_DIM +1, hlls_[i], 1);
+        printf("\nhzu_mask_\n");
+        d_print_mat(1,  CONTROL_DIM+STATE_DIM +1, hlus_[i], 1);*/
     }   // end optional printout
-#endif  // HPIPM_PRINT_MATRICES
+  //  #endif   //HPIPM_PRINT_MATRICES
 
 
     // solve optimal control problem
@@ -267,7 +281,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::solve()
         if (hpipm_status_ == 0)
         {
             printf("\n -> QP solved!\n");
-        }
+        }   
         else if (hpipm_status_ == 1)
         {
             printf("\n -> Solver failed! Maximum number of iterations reached.\n");
@@ -311,6 +325,29 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeStatesAndControls()
         printSolution();
     }
 }
+
+template <int STATE_DIM, int CONTROL_DIM>
+void HPIPMInterface<STATE_DIM, CONTROL_DIM>::computeSlAndSu()
+{   
+    // extract solution for x and u
+    for (int ii = 0; ii < N_; ii++)
+    {
+        Eigen::Matrix<double, CONTROL_DIM + STATE_DIM + 1, 1> sl_;
+        ::d_ocp_qp_sol_get_sl(ii, &qp_sol_, this->sl_sol_[ii].data());
+    }
+    for (int ii = 0; ii <= N_; ii++)
+    {
+        Eigen::Matrix<double, STATE_DIM + CONTROL_DIM + 1, 1> su_;
+        ::d_ocp_qp_sol_get_su(ii, &qp_sol_, this->su_sol_[ii].data());
+    }
+
+    // display iteration summary
+    if (settings_.lqoc_solver_settings.lqoc_debug_print)
+    {
+        printSolution();
+    }
+}
+
 
 
 template <int STATE_DIM, int CONTROL_DIM>
@@ -390,7 +427,7 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setProblemImpl(
 
     // setup unconstrained part of problem
     setupCostAndDynamics(lqocProblem->A_, lqocProblem->B_, lqocProblem->b_, lqocProblem->P_, lqocProblem->qv_,
-        lqocProblem->Q_, lqocProblem->rv_, lqocProblem->R_);
+        lqocProblem->Q_, lqocProblem->Zl_, lqocProblem->Zu_, lqocProblem->rv_, lqocProblem->R_);
 
     if (dimsChanged)
     {
@@ -490,6 +527,7 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureStateBoxConstraints(
         nbx_.resize(N + 1, 0);
         hidxbx_.resize(N + 1);
         hlbx_.resize(N + 1);
+        hlbx_.resize(N + 1);
         hubx_.resize(N + 1);
         hlbx_mask_.resize(N + 1);
         hubx_mask_.resize(N + 1);
@@ -504,7 +542,7 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureStateBoxConstraints(
         // first stage requires special treatment as state is not a decision variable
         if (i == 0)
         {
-            nbx_[i] = 0;
+            nbx_[i] = lqocProblem->nbx_[i];
             continue;
         }
 
@@ -516,7 +554,7 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureStateBoxConstraints(
             hlbx_[i] = lqocProblem->x_lb_[i].data();
             hubx_[i] = lqocProblem->x_ub_[i].data();
             hidxbx_[i] = lqocProblem->x_I_[i].data();
-
+       
             // create masks for box constraints
             hlbx_mask_Eigen_[i] = Eigen::VectorXd(nbx_[i]);
             hubx_mask_Eigen_[i] = Eigen::VectorXd(nbx_[i]);
@@ -533,7 +571,6 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureStateBoxConstraints(
 
     return configChanged;
 }
-
 
 template <int STATE_DIM, int CONTROL_DIM>
 bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
@@ -606,6 +643,30 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureGeneralConstraints(
     return configChanged;
 }
 
+template <int STATE_DIM, int CONTROL_DIM>
+bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::configureSoftConstraints(
+    std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem)
+{
+    bool configChanged = false;
+
+    const int N = lqocProblem->getNumberOfStages();
+
+    hidxs_.resize(N);
+
+    for (int i = 0; i < N + 1; i++)
+    {   
+        hZl_[i] = lqocProblem->Zl_[i].data();
+        hZu_[i] = lqocProblem->Zu_[i].data();
+        hzl_[i] = lqocProblem->zl_[i].data();
+        hzu_[i] = lqocProblem->zu_[i].data();
+        hlus_[i] = lqocProblem->s_ub_[i].data();
+        hlls_[i] = lqocProblem->s_lb_[i].data();
+        hidxs_[i] = lqocProblem->s_I_[i].data();
+        nsg_[i] = lqocProblem->nsg_[i];
+    }
+    // first-order constraint derivative data
+    return configChanged;
+}
 
 template <int STATE_DIM, int CONTROL_DIM>
 void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateMatrixArray& A,
@@ -614,6 +675,8 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateMatrixArr
     FeedbackArray& P,
     StateVectorArray& qv,
     StateMatrixArray& Q,
+    SoftMatrixArray& Zl,
+    SoftMatrixArray& Zu,
     ControlVectorArray& rv,
     ControlMatrixArray& R)
 {
@@ -645,6 +708,15 @@ void HPIPMInterface<STATE_DIM, CONTROL_DIM>::setupCostAndDynamics(StateMatrixArr
 
         if (i > 0)
             hr_[i] = rv[i].data();  // do not mutate pointers for init stage
+    }
+
+    hZl.resize(N_ + 1);
+    hZu.resize(N_ + 1);
+
+    for(int i = 0; i<N_; i++)
+    {
+    hZl[i] = Zl[i].data();
+	hZu[i] = Zu[i].data();
     }
 
     // terminal stage
@@ -693,7 +765,7 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeProblemSize(std::shared_ptr<L
     nu_[N_] = 0;                      // last input is not a decision variable
 
     nx_.resize(N_ + 1, STATE_DIM);  // initialize number of states per stage
-    nx_[0] = 0;                     // initial state is not a decision variable but given
+    //nx_[0] = 0;                     // initial state is not a decision variable but given
 
 
     // resize the containers for the affine system dynamics approximation
@@ -705,6 +777,8 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeProblemSize(std::shared_ptr<L
     this->u_sol_.resize(N_);
     this->lv_.resize(N_);
     this->L_.resize(N_);
+    this->sl_sol_.resize(N);
+    this->su_sol_.resize(N);
 
     // resize the containers for the LQ cost approximation
     hQ_.resize(N_ + 1);
@@ -718,10 +792,10 @@ bool HPIPMInterface<STATE_DIM, CONTROL_DIM>::changeProblemSize(std::shared_ptr<L
     nsbu_.resize(N_ + 1, 0);  // no softened input box constraints
     nsg_.resize(N_ + 1, 0);   // no softened general constraints
 
-    hZl_.resize(N_ + 1, 0);
-    hZu_.resize(N_ + 1, 0);
-    hzl_.resize(N_ + 1, 0);
-    hzu_.resize(N_ + 1, 0);
+    hZl_.resize(N_ + 1);
+    hZu_.resize(N_ + 1);
+    hzl_.resize(N_ + 1);
+    hzu_.resize(N_ + 1);
 
     hidxs_.resize(N_ + 1, 0);
 

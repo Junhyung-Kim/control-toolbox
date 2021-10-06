@@ -16,6 +16,7 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #pragma once
 
 #include <ct/optcon/problem/ContinuousOptConProblem.h>
+#include "pthread.h"
 
 
 namespace ct {
@@ -71,7 +72,7 @@ public:
 	 * @return returns true if the optimal control structure is valid for the given solver
 	 */
     virtual void setProblem(const OptConProblem_t& optConProblem)
-    {
+    {  
         optConProblem.verify();
 
         changeTimeHorizon(optConProblem.getTimeHorizon());

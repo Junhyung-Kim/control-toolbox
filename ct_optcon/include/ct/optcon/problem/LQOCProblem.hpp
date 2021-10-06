@@ -69,15 +69,19 @@ public:
 
     using input_box_constr_vec_t = Eigen::Matrix<SCALAR, CONTROL_DIM, 1>;
     using state_box_constr_vec_t = Eigen::Matrix<SCALAR, STATE_DIM, 1>;
+    using soft_box_constr_vec_t = Eigen::Matrix<SCALAR, STATE_DIM + CONTROL_DIM + 1, 1>;
     using input_box_constr_array_t = ct::core::DiscreteArray<input_box_constr_vec_t>;
     using state_box_constr_array_t = ct::core::DiscreteArray<state_box_constr_vec_t>;
-
+    using soft_box_constr_array_t = ct::core::DiscreteArray<soft_box_constr_vec_t>;
+    
     //! a vector indicating which box constraints are active and which not
     using state_box_constr_sparsity_t = Eigen::Matrix<int, STATE_DIM, 1>;
     using input_box_constr_sparsity_t = Eigen::Matrix<int, CONTROL_DIM, 1>;
+    using soft_box_constr_sparsity_t = Eigen::Matrix<int, STATE_DIM + CONTROL_DIM + 1, 1>;
 
     using input_box_constr_sparsity_array_t = ct::core::DiscreteArray<input_box_constr_sparsity_t>;
     using state_box_constr_sparsity_array_t = ct::core::DiscreteArray<state_box_constr_sparsity_t>;
+    using soft_box_constr_sparsity_array_t = ct::core::DiscreteArray<soft_box_constr_sparsity_t>;
 
     using VectorXi = Eigen::VectorXi;
 
@@ -155,6 +159,12 @@ public:
         const VectorXi& sp,
         const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_nom_abs);
 
+    void setIntermediateStateBoxConstraintsI(const int i, const int nConstr,
+        const constr_vec_t& x_lb,
+        const constr_vec_t& x_ub,
+        const VectorXi& sp,
+        const ct::core::StateVectorArray<STATE_DIM, SCALAR>& x_nom_abs);
+
     /*!
      * \brief set box constraints for terminal stage
      * @param nConstr the number of constraints
@@ -164,6 +174,19 @@ public:
      * @param x_nom_abs current nominal terminal state vector in absolute coordinates, required for coordinate transform
      */
     void setTerminalBoxConstraints(const int nConstr,
+        const constr_vec_t& x_lb,
+        const constr_vec_t& x_ub,
+        const VectorXi& sp,
+        const ct::core::StateVector<STATE_DIM, SCALAR>& x_nom_abs);
+
+    /*!
+     * \brief set general (in)equaltiy constraints, with the same constraint applied at each stage
+     * @param d_lb general constraint lower bound
+     * @param d_ub general constraint upper bound
+     * @param C general constraint state jacobian
+     * @param D general constraint control jacobian
+     */
+    void setInitialBoxConstraints(const int nConstr,
         const constr_vec_t& x_lb,
         const constr_vec_t& x_ub,
         const VectorXi& sp,
@@ -192,6 +215,7 @@ public:
     void setFromTimeInvariantLinearQuadraticProblem(
         ct::core::DiscreteLinearSystem<STATE_DIM, CONTROL_DIM, SCALAR>& linearSystem,
         ct::optcon::CostFunctionQuadratic<STATE_DIM, CONTROL_DIM, SCALAR>& costFunction,
+        core::StateVector<STATE_DIM, SCALAR> x0,
         const ct::core::StateVector<STATE_DIM, SCALAR>& stateOffset,
         const double dt);
 
@@ -213,6 +237,11 @@ public:
     //! LQ approximation of the pure state penalty, including terminal state penalty
     ct::core::StateVectorArray<STATE_DIM, SCALAR> qv_;
     ct::core::StateMatrixArray<STATE_DIM, SCALAR> Q_;
+    ct::core::SoftMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> Zl_;
+    ct::core::SoftMatrixArray<STATE_DIM, CONTROL_DIM, SCALAR> Zu_;
+
+    ct::core::SoftVectorArray<STATE_DIM, CONTROL_DIM, SCALAR> zl_;
+    ct::core::SoftVectorArray<STATE_DIM, CONTROL_DIM, SCALAR> zu_;
 
     //! LQ approximation of the pure control penalty
     ct::core::ControlVectorArray<CONTROL_DIM, SCALAR> rv_;
@@ -226,6 +255,8 @@ public:
     input_box_constr_array_t u_ub_;
     state_box_constr_array_t x_lb_;
     state_box_constr_array_t x_ub_;
+    soft_box_constr_array_t s_lb_;
+    soft_box_constr_array_t s_ub_;
 
     /*!
      * \brief container for the box constraint sparsity pattern
@@ -234,6 +265,7 @@ public:
      */
     input_box_constr_sparsity_array_t u_I_;
     state_box_constr_sparsity_array_t x_I_;
+    soft_box_constr_sparsity_array_t s_I_;
 
     //! the number of input box constraints at every stage.
     std::vector<int> nbu_;
@@ -250,6 +282,7 @@ public:
     constr_control_jac_array_t D_;
     //! number of general inequality constraints
     std::vector<int> ng_;
+    std::vector<int> nsg_;
 
 
 private:

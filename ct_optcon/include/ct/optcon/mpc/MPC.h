@@ -144,7 +144,7 @@ public:
             nullptr);
 
 
-    /*!
+    /*
      * Prepare MPC iteration
      * @param ext_ts the current external time
      */

@@ -4,7 +4,7 @@ option(BUILD_EXAMPLES "Compile all examples for ct" false)
 option(BUILD_HYQ_FULL "Compile all examples for HyQ (takes long, should use clang)" false)
 option(BUILD_HYQ_LINEARIZATION_TIMINGS "Build linearization timing tests for HyQ (takes long, should use clang)" false)
 option(BUILD_HYA_LINEARIZATION_TIMINGS "Build linearization timing tests for HyA (takes long, should use clang)" false)
-option(HPIPM "Build HPIPM Optimal Control solver" false)
+option(HPIPM "Build HPIPM Optimal Control solver" true)
 
 ## option to activate/deactivate explicit template prespecs
 option(USE_PRESPEC "Compile with explicit template prespec" false)

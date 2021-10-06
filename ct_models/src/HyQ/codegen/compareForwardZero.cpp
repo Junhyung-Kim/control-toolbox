@@ -21,7 +21,7 @@ void timing(bool useContactModel)
     std::shared_ptr<ContactModel> contactModel = std::shared_ptr<ContactModel>(new ContactModel(5000.0, 1000.0, 100.0,
         100.0, -0.02, ContactModel::VELOCITY_SMOOTHING::SIGMOID, hyqSys->dynamics().kinematicsPtr()));
     if (useContactModel)
-        hyqSys->setContactModel(contactModel);
+        hyqSys->setContactModel(contact);
 
     ct::models::HyQ::HyQForwardZero hyqForwardZero;
 

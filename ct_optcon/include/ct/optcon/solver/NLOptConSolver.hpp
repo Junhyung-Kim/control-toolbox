@@ -10,6 +10,8 @@ Licensed under the BSD-2 license (see LICENSE file in main directory)
 #include <ct/optcon/nloc/NLOCBackendST.hpp>
 #include <ct/optcon/nloc/NLOCBackendMP.hpp>
 
+#include "pthread.h"
+
 #include <ct/optcon/nloc/algorithms/SingleShooting.hpp>
 #include <ct/optcon/nloc/algorithms/MultipleShooting.hpp>
 

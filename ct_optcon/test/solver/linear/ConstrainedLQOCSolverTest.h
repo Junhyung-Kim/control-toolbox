@@ -697,7 +697,7 @@ TEST(ConstrainedLQOCSolverTest, BoxConstraintUsingConstraintToolbox)
     hpipmSolver->setProblem(lqocProblem1);
     hpipmSolver->initializeAndAllocate();
     hpipmSolver->solve();
-    hpipmSolver->computeStatesAndControls();
+    hpipmSolver->();
     hpipmSolver->computeFeedbackMatrices();
     hpipmSolver->compute_lv();
 

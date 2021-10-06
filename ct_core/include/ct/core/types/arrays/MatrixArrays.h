@@ -37,11 +37,18 @@ using StateVectorArray = DiscreteArray<StateVector<STATE_DIM, SCALAR>>;
 template <size_t CONTROL_DIM, typename SCALAR = double>
 using ControlVectorArray = DiscreteArray<ControlVector<CONTROL_DIM, SCALAR>>;
 
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+using SoftVectorArray = DiscreteArray<StateVector<STATE_DIM + CONTROL_DIM + 1, SCALAR>>;
+
 template <size_t OUTPUT_DIM, typename SCALAR = double>
 using OutputVectorArray = DiscreteArray<OutputVector<OUTPUT_DIM, SCALAR>>;
 
 template <size_t OUTPUT_DIM, typename SCALAR = double>
 using OutputMatrixArray = DiscreteArray<OutputMatrix<OUTPUT_DIM, SCALAR>>;
+
+template <size_t STATE_DIM, size_t CONTROL_DIM, typename SCALAR = double>
+using SoftMatrixArray = DiscreteArray<StateMatrix<STATE_DIM + CONTROL_DIM + 1, SCALAR>>;
+
 
 }  // namespace core
 }  // namespace ct

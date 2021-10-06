@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 3.5)
 
+add_compile_options(-std=c++17 -O3 -fopenmp)
+
 if(NOT TARGET clang-format)
 	include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/compilerSettings.cmake)
 	include(${CMAKE_CURRENT_SOURCE_DIR}/../ct/cmake/explicitTemplateHelpers.cmake)
@@ -15,6 +17,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp -std=c++14 -Wno-unknown-pragmas -Wall -Wfatal-errors")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread -std=c++14 -Wfatal-errors")
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
 
 
 ## find and include required dependencies
@@ -80,7 +89,7 @@ find_package(IPOPT QUIET)
 if(IPOPT_FOUND)
     set(BUILD_WITH_IPOPT_SUPPORT ON)
     message(STATUS "Found IPOPT - building with IPOPT support")
-    set(IPOPT_LIBS ${IPOPT_LIBRARIES})
+    set(IPOPT_LIBS ${IPOPT_LIBS})
     list(APPEND ct_optcon_COMPILE_DEFINITIONS BUILD_WITH_IPOPT_SUPPORT)
     list(APPEND ct_optcon_COMPILE_DEFINITIONS ${IPOPT_DEFINITIONS})
 endif()
@@ -138,6 +147,7 @@ if(USE_PRESPEC)
         target_compile_definitions(${lib_name} PUBLIC ${ct_optcon_COMPILE_DEFINITIONS})
         target_link_libraries(${lib_name}
             ct_core
+            pthread
             ${matlab_cpp_interface_LIBRARIES}
             ${LAPACK_LIBS}
             ${HPIPM_LIBS}
@@ -153,6 +163,9 @@ target_include_directories(ct_optcon INTERFACE ${ct_optcon_TARGET_INCLUDE_DIRS})
 target_compile_definitions(ct_optcon INTERFACE ${ct_optcon_COMPILE_DEFINITIONS})
 target_link_libraries(ct_optcon INTERFACE
     ct_core
+    pthread
+    blasfeo
+    ipopt
     ${matlab_cpp_interface_LIBRARIES}
     ${LAPACK_LIBS}
     ${HPIPM_LIBS}

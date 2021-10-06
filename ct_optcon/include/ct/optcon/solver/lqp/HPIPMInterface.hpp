@@ -56,6 +56,8 @@ public:
 
     using StateVectorArray = ct::core::StateVectorArray<STATE_DIM>;
     using ControlVectorArray = ct::core::ControlVectorArray<CONTROL_DIM>;
+    using SoftMatrixArray = ct::core::SoftMatrixArray<STATE_DIM, CONTROL_DIM>;
+
 
     // definitions for variable-size constraints
     using constr_vec_t = Eigen::Matrix<double, -1, 1>;
@@ -75,6 +77,7 @@ public:
     void solve() override;
 
     virtual void computeStatesAndControls() override;
+    virtual void computeSlAndSu() override;
     virtual void computeFeedbackMatrices() override;
     virtual void compute_lv() override;
 
@@ -85,7 +88,9 @@ public:
         std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
     virtual bool configureStateBoxConstraints(
         std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
-
+    virtual bool configureSoftConstraints(
+        std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
+    
     //! brief setup and configure the general (in)equality constraints
     virtual bool configureGeneralConstraints(std::shared_ptr<LQOCProblem<STATE_DIM, CONTROL_DIM>> lqocProblem) override;
 
@@ -143,6 +148,8 @@ private:
         FeedbackArray& P,
         StateVectorArray& qv,
         StateMatrixArray& Q,
+        SoftMatrixArray& Zl,
+        SoftMatrixArray& Zu,
         ControlVectorArray& rv,
         ControlMatrixArray& R);
 
@@ -182,7 +189,9 @@ private:
     Eigen::Matrix<double, state_dim, 1> hb0_;  //! intermediate container for intuitive transcription of first stage
 
     std::vector<double*> hQ_;                    //! pure state penalty hessian
-    std::vector<double*> hS_;                    //! state-control cross-terms
+    std::vector<double*> hS_;
+    std::vector<double*> hZl;                    //! pure state penalty hessian
+    std::vector<double*> hZu;                    //! state-control cross-terms
     std::vector<double*> hR_;                    //! pure control penalty hessian
     std::vector<double*> hq_;                    //! pure state penalty jacobian
     std::vector<double*> hr_;                    //! pure control penalty jacobian

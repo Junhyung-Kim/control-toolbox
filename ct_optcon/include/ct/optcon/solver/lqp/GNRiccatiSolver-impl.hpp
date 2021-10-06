@@ -121,6 +121,9 @@ void GNRiccatiSolver<STATE_DIM, CONTROL_DIM, SCALAR>::changeNumberOfStages(int N
     this->x_sol_.resize(N + 1);
     this->u_sol_.resize(N);
 
+    this->sl_sol_.resize(N);
+    this->su_sol_.resize(N);
+
     sv_.resize(N + 1);
     S_.resize(N + 1);
 

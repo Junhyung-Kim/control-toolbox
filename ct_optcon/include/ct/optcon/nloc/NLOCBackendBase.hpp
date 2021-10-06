@@ -485,7 +485,7 @@ protected:
         scalar_t& e_tot) const;
 
     /*!
-     * @brief Compute general constraint violations for a given set of state and input trajectory
+     * @brief Compute  violations for a given set of state and input trajectory
      *
      * \param threadId the ID of the thread
      * \param x_local the state trajectory

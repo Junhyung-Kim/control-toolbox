@@ -15,6 +15,9 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wfatal-errors -std=c++14 -Wall -Wno-unk
 SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 find_package(kindr REQUIRED)
+list(APPEND CMAKE_PREFIX_PATH "/opt")
+find_package(blasfeo QUIET)
+find_package(hpipm QUIET)
 if(NOT TARGET ${ct_optcon})
 	find_package(ct_optcon REQUIRED)
 endif()

@@ -102,7 +102,7 @@ public:
         Eigen::Matrix<double, 1, 1> val;
         // returns a number > 0 if point x is outside of the circle
         val.template segment<1>(0) << pow((x(0) - x0_(0)), 2) / pow(r_, 2) + pow((x(1) - x0_(1)), 2) / pow(r_, 2) -
-                                          double(1.0);
+                                          double(1.0);         
         return val;
     }
 
@@ -164,7 +164,7 @@ int main(int argc, char** argv)
     std::shared_ptr<ct::optcon::ConstraintContainerAD<STATE_DIM, CONTROL_DIM>> generalConstraints(
         new ct::optcon::ConstraintContainerAD<STATE_DIM, CONTROL_DIM>());
 
-    // add and initialize general constraint terms
+    // add and initialize  terms
     generalConstraints->addIntermediateConstraint(obstacleConstraint, verbose);
     generalConstraints->addTerminalConstraint(obstacleConstraint, verbose);
     generalConstraints->initialize();
